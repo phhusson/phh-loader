@@ -1,0 +1,8 @@
+#!/bin/sh
+
+/bin/busybox-armv8l mkdir -p /bin /usr/bin /sbin /usr/sbin
+/bin/busybox-armv8l --install -s
+
+echo "Hello world"
+
+dhclient 
