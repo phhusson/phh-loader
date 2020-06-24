@@ -1,3 +1,7 @@
+// This file is
+//  Copyright 2020 Pierre-Hugues Husson <phh@phh.me>
+// It is redistributed under the GPLv3 license, that you can see at https://www.gnu.org/licenses/gpl-3.0.txt
+
 package main
 
 import (
