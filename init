@@ -1,8 +1,21 @@
 #!/bin/sh
 
-/bin/busybox-armv8l mkdir -p /bin /usr/bin /sbin /usr/sbin
+set -x
+
+/bin/busybox-armv8l mkdir -p /bin /usr/bin /sbin /usr/sbin /dev /sys /proc /mnt /etc
 /bin/busybox-armv8l --install -s
+mount -t proc none /proc
+mount -t sysfs none /sys
+mdev -s
+
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin/
 
 echo "Hello world"
 
-dhclient 
+ifconfig eth0 up
+timeout 30 udhcpc
+
+wget http://192.168.1.53:8080/run.sh
+sh run.sh
+
+/bin/sh
