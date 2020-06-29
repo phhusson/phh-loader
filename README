@@ -1,0 +1,28 @@
+We need GPT so that partitions are named, which is a requirement for Android.
+However, the RPI's VC bootloader doesn't know about GPT, so we need a Hybrid MBR.
+
+Start by creating a GPT partition table. You'll need a 32MB metadata partition, 10GB super partition, and then whatever you want in userdata partition.
+
+Once this is done, use util-linux's fdisk (I have 2.33.1). If it asks whether to use GPT or MBR, select GPT
+Then use the command `M` to switch to the MBR
+Remove all MBR's partitions (`d` command multiple times for all partitions)
+
+Then create the FAT boot partition as number 1:
+n
+1
+8192
+532479
+(if it asks to remove partition's formating mark, refuse)
+t
+c
+
+Now create GPT partition, as number 2:
+n
+2
+1
+8191
+t
+ee
+
+Then write: `w`
+For some reason, it doesn't exit here, but you can use `q` now
