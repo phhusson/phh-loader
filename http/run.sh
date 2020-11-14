@@ -25,7 +25,12 @@ wget http://192.168.1.53:8080/dtb-mainline -O dtb-to-boot
 wget http://192.168.1.53:8080/dtc
 wget http://192.168.1.53:8080/fdtput
 wget http://192.168.1.53:8080/fdtget
-chmod 0755 dtc fdtput fdtget
+wget http://192.168.1.53:8080/fdtoverlay
+chmod 0755 dtc fdtput fdtget fdtoverlay
+
+wget http://192.168.1.53:8080/bcm2711-rpi-4-b.dtb
+wget http://192.168.1.53:8080/vc4-kms-v3d-pi4.dtbo
+wget http://192.168.1.53:8080/bcm2711-rpi-4-b-post.dtb -O dtb-to-boot
 
 dtc -I fs -O dtb /sys/firmware/devicetree/base -o dtb-bootloader
 
@@ -61,6 +66,17 @@ fi
 memory=$(fdtget -t x dtb-bootloader /memory@0 reg)
 fdtput -t x dtb-to-boot /memory@0 reg $memory
 
+localMacAddress=$(fdtget -t hhx dtb-bootloader /scb/ethernet@7d580000 local-mac-address)
+if [ -n "$localMacAddress" ];then
+    fdtput -t hhx dtb-to-boot /scb/ethernet@7d580000 local-mac-address $localMacAddress
+fi
+
+#What is this? bl is hot-patching Linux's pcie dma?
+pcieRange=$(fdtget -t x dtb-bootloader /scb/pcie@7d500000 dma-ranges)
+fdtput -t x dtb-to-boot /scb/pcie@7d500000 dma-ranges $pcieRange
+
+#TODO: Include model name? framebuffer node? system {}? axi {}?
+
 cmdline=$(cat /proc/cmdline)
 cmdline="$cmdline androidboot.hardware=rpi4"
 #cmdline="$cmdline androidboot.super_partition=mmcblk1p2"
@@ -91,6 +107,7 @@ cmdline="$cmdline androidboot.serialno=$serialNumber"
 #simg2img super.img mmcblk1p3
 #mkfs.ext4 mmcblk1p4
 
-sh
+wget http://192.168.1.53:8080/s.img -O /dev/mmcblk1p3
+#sh
 
 kexec -f --dtb=dtb-to-boot --command-line="$cmdline" --initrd=ramdisk.img Image
